@@ -1,0 +1,63 @@
+import re
+
+def comprobar_requisitos(contrasena, confirmacion):
+    errores = []
+
+    
+    if len(contrasena) < 8:
+        errores.append("tener al menos 8 caracteres")
+
+    
+    if " " in contrasena:
+        errores.append("no contener espacios en blanco")
+
+    
+    if not re.search(r"[A-Z]", contrasena):
+        errores.append("tener al menos una letra mayúscula")
+
+    
+    if not re.search(r"[a-z]", contrasena):
+        errores.append("tener al menos una letra minúscula")
+
+    
+    if not re.search(r"\d", contrasena):
+        errores.append("tener al menos un número")
+
+   
+    if not re.search(r"[\W_]", contrasena):
+        errores.append("tener al menos un carácter especial")
+
+   
+    if contrasena != confirmacion:
+        errores.append("coincidir con la confirmación")
+
+    return errores
+
+def unir_errores(lista):
+    """Une una lista de errores en una sola frase legible en español."""
+    if not lista:
+        return ""
+    if len(lista) == 1:
+        return lista[0]
+    if len(lista) == 2:
+        return f"{lista[0]} y {lista[1]}"
+
+    return ", ".join(lista[:-1]) + " y " + lista[-1]
+
+
+def pedir_contraseña_interactivamente():
+    while True:
+        contrasena = input("Ingrese su contraseña: ")
+        confirmacion = input("Confirme su contraseña: ")
+
+        errores = comprobar_requisitos(contrasena, confirmacion)
+
+        if not errores:
+            print(" Contraseña válida y confirmada correctamente.")
+            return contrasena  
+
+        mensaje_errores = unir_errores(errores)
+        print(" Error la contraseña debe:", mensaje_errores + ".\nPor favor inténtelo nuevamente.\n")
+
+if __name__ == "__main__":
+    pedir_contraseña_interactivamente()

@@ -1,0 +1,105 @@
+import tkinter as tk
+from tkinter import messagebox
+
+class EquipoMaratonProgramacion:
+    def __init__(self, nombre_equipo, universidad, lenguaje, tamano):
+        self.nombre_equipo = nombre_equipo
+        self.universidad = universidad
+        self.lenguaje = lenguaje
+        self.tamano = tamano
+        self.programadores = []
+
+    def equipo_completo(self):
+        return len(self.programadores) >= self.tamano
+
+    def validar_nombre_apellido(self, nombre, apellido):
+        for campo, valor in [("Nombre", nombre), ("Apellido", apellido)]:
+            if not valor.isalpha():
+                raise ValueError(f"{campo} inválido: solo debe contener letras.")
+            if len(valor) >= 20:
+                raise ValueError(f"{campo} inválido: debe tener menos de 20 caracteres.")
+        return True
+
+    def agregar_programador(self, nombre, apellido):
+        if self.equipo_completo():
+            raise Exception("El equipo ya está completo.")
+        self.validar_nombre_apellido(nombre, apellido)
+        self.programadores.append({"nombre": nombre, "apellido": apellido})
+
+
+
+class App:
+    def __init__(self, root):
+        self.root = root
+        self.root.title("Maratón de Programación - Creación de Equipo")
+        self.root.geometry("500x500")
+
+        self.equipo = None
+
+        
+        tk.Label(root, text="Datos del Equipo", font=("Arial", 14, "bold")).pack(pady=5)
+
+        self.nombre_equipo = self.crear_entrada("Nombre del equipo:")
+        self.universidad = self.crear_entrada("Universidad:")
+        self.lenguaje = self.crear_entrada("Lenguaje de programación:")
+        self.tamano = self.crear_entrada("Tamaño del equipo (2-3):")
+
+        tk.Button(root, text="Crear Equipo", command=self.crear_equipo, bg="#4CAF50", fg="white").pack(pady=5)
+
+        
+        tk.Label(root, text="Agregar Programadores", font=("Arial", 14, "bold")).pack(pady=10)
+        self.nombre_prog = self.crear_entrada("Nombre:")
+        self.apellido_prog = self.crear_entrada("Apellido:")
+
+        tk.Button(root, text="Añadir Programador", command=self.agregar_programador, bg="#2196F3", fg="white").pack(pady=5)
+
+        self.lista = tk.Listbox(root, width=50, height=6)
+        self.lista.pack(pady=10)
+
+    def crear_entrada(self, texto):
+        tk.Label(self.root, text=texto).pack()
+        entrada = tk.Entry(self.root, width=40)
+        entrada.pack()
+        return entrada
+
+    def crear_equipo(self):
+        try:
+            nombre = self.nombre_equipo.get()
+            universidad = self.universidad.get()
+            lenguaje = self.lenguaje.get()
+            tamano = int(self.tamano.get())
+
+            if tamano < 2 or tamano > 3:
+                raise ValueError("El tamaño del equipo debe ser 2 o 3.")
+
+            self.equipo = EquipoMaratonProgramacion(nombre, universidad, lenguaje, tamano)
+            messagebox.showinfo("Éxito", f"✅ Equipo '{nombre}' creado correctamente.")
+        except ValueError as e:
+            messagebox.showerror("Error", str(e))
+        except Exception:
+            messagebox.showerror("Error", "Verifique los datos ingresados.")
+
+    def agregar_programador(self):
+        if not self.equipo:
+            messagebox.showwarning("Aviso", "Primero cree el equipo antes de agregar programadores.")
+            return
+
+        nombre = self.nombre_prog.get().strip()
+        apellido = self.apellido_prog.get().strip()
+
+        try:
+            self.equipo.agregar_programador(nombre, apellido)
+            self.lista.insert(tk.END, f"{nombre} {apellido}")
+            messagebox.showinfo("Éxito", f"Programador {nombre} {apellido} añadido correctamente.")
+            self.nombre_prog.delete(0, tk.END)
+            self.apellido_prog.delete(0, tk.END)
+        except Exception as e:
+            messagebox.showerror("Error", str(e))
+
+
+
+if __name__ == "__main__":
+    root = tk.Tk()
+    app = App(root)
+    root.mainloop()
+

@@ -1,0 +1,90 @@
+import tkinter as tk
+from tkinter import filedialog, messagebox
+
+class LeerArchivo:
+    def __init__(self, ruta_archivo):
+        self.ruta_archivo = ruta_archivo
+
+    def leer_bytes(self):
+        """Lee el archivo en modo binario y retorna su contenido como texto."""
+        try:
+            with open(self.ruta_archivo, "rb") as archivo:
+                contenido_bytes = archivo.read()
+                contenido_texto = contenido_bytes.decode("utf-8", errors="replace")
+                return contenido_texto
+        except FileNotFoundError:
+            raise FileNotFoundError("El archivo no se encontró.")
+        except Exception as e:
+            raise Exception(f"Ocurrió un error al leer el archivo: {e}")
+
+    def guardar_bytes(self, contenido_texto):
+        """Guarda el texto en el archivo usando flujo de bytes."""
+        try:
+            with open(self.ruta_archivo, "wb") as archivo:
+                archivo.write(contenido_texto.encode("utf-8"))
+        except Exception as e:
+            raise Exception(f"No se pudo guardar el archivo: {e}")
+
+
+
+class App:
+    def __init__(self, root):
+        self.root = root
+        self.root.title("Lector y Editor de Archivos - Flujo de Bytes")
+        self.root.geometry("650x450")
+
+        self.archivo_actual = None
+
+        
+        tk.Label(root, text="📄 Lector y Editor de Archivos (Flujo de Bytes)", 
+                 font=("Arial", 14, "bold")).pack(pady=10)
+
+        
+        marco_botones = tk.Frame(root)
+        marco_botones.pack(pady=5)
+
+        tk.Button(marco_botones, text="Abrir archivo", command=self.abrir_archivo,
+                  bg="#2196F3", fg="white", width=15).grid(row=0, column=0, padx=5)
+        tk.Button(marco_botones, text="Guardar cambios", command=self.guardar_archivo,
+                  bg="#4CAF50", fg="white", width=15).grid(row=0, column=1, padx=5)
+
+        
+        self.texto = tk.Text(root, wrap="word", width=75, height=20)
+        self.texto.pack(padx=10, pady=10, fill="both", expand=True)
+
+    def abrir_archivo(self):
+        """Permite seleccionar un archivo y mostrar su contenido."""
+        ruta = filedialog.askopenfilename(title="Seleccione el archivo de texto",
+                                          filetypes=[("Archivos de texto", "*.txt"), ("Todos los archivos", "*.*")])
+        if not ruta:
+            return  
+
+        try:
+            lector = LeerArchivo(ruta)
+            contenido = lector.leer_bytes()
+            self.texto.delete(1.0, tk.END)
+            self.texto.insert(tk.END, contenido)
+            self.archivo_actual = lector  # Guardamos el objeto para editarlo después
+            messagebox.showinfo("Éxito", f"✅ Archivo abierto: {ruta.split('/')[-1]}")
+        except Exception as e:
+            messagebox.showerror("Error", str(e))
+
+    def guardar_archivo(self):
+        """Guarda el contenido actual del cuadro de texto en el archivo abierto."""
+        if not self.archivo_actual:
+            messagebox.showwarning("Aviso", "Primero abra un archivo antes de guardar.")
+            return
+
+        contenido_modificado = self.texto.get(1.0, tk.END).strip()
+
+        try:
+            self.archivo_actual.guardar_bytes(contenido_modificado)
+            messagebox.showinfo("Éxito", "💾 Archivo guardado correctamente.")
+        except Exception as e:
+            messagebox.showerror("Error", str(e))
+
+
+if __name__ == "__main__":
+    root = tk.Tk()
+    app = App(root)
+    root.mainloop()
